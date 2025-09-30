@@ -1,6 +1,6 @@
 # 数据摄取与 PDF 解析（服务端 + Celery 队列）
 
-目标：将 PDF/教材转换为结构化的段落、标题、注释与图片占位，为后续个性化与生成提供稳定输入。能力在服务端实现；Flutter 客户端负责文件上传、状态展示与结果查询。
+目标：将 PDF/教材转换为结构化的段落、标题、注释与图片占位，为后续个性化与生成提供稳定输入。能力在服务端实现；通过 **API 接口**接收文件上传、查询解析状态与获取结果。
 
 ## 队列编排与任务划分
 - 任务列表：
@@ -14,14 +14,29 @@
 
 ## 实现与提示词
 
-### 1) 上传与导入（移动端透传）
-- 客户端：`dio` multipart → `POST /ingest/pdf` → 返回 `taskId` → 轮询 `GET /ingest/tasks/:id`
-- 测试（接口）：
+### 1) 上传与导入（API 接口）
+- **接口设计**：
+  - `POST /ingest/pdf`：上传 PDF 文件（multipart/form-data）
+  - 返回：`{ taskId, status: "pending" }`
+  - `GET /ingest/tasks/:id`：轮询任务状态与进度
+  
+- **测试方式**：
 ```bash
-curl -F file=@sample.pdf http://localhost:3001/ingest/pdf | jq .
-curl http://localhost:3001/ingest/tasks/<taskId> | jq .
+# cURL 测试
+curl -F file=@sample.pdf http://localhost:8000/ingest/pdf | jq .
+curl http://localhost:8000/ingest/tasks/<taskId> | jq .
+
+# Postman 测试
+# 创建 POST 请求，Body 选择 form-data，key=file，type=File
+
+# Python 测试脚本
+import requests
+with open('sample.pdf', 'rb') as f:
+    response = requests.post('http://localhost:8000/ingest/pdf', files={'file': f})
+    task_id = response.json()['data']['taskId']
+    # 轮询状态
+    status = requests.get(f'http://localhost:8000/ingest/tasks/{task_id}').json()
 ```
-- 测试（客户端）：integration_test 验证状态迁移与弱网重试
 
 ### 2) 解析 PDF（服务端）
 - 工具：`pdfminer.six`/`pymupdf`（Python）或 `pdf-parse`（Node）
@@ -45,5 +60,6 @@ curl http://localhost:3001/ingest/tasks/<taskId> | jq .
 ## 验收
 - 3 份不同排版 PDF 的解析、清洗、分块稳定；
 - 单测>95% 通过，关键函数边界覆盖充分；
-- 客户端上传/轮询流程稳定，弱网/中断可恢复，支持重试与（可选）断点续传。
+- API 接口上传/轮询流程稳定，支持重试与错误处理；
+- Swagger UI 文档完整，可直接在线测试。
 

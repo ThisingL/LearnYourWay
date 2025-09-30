@@ -3,5 +3,4 @@ node_modules/
 .venv/
 __pycache__/
 .DS_Store
-ai家教项目sop/*.zip
 
