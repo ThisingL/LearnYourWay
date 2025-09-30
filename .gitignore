@@ -1,6 +1,43 @@
-node_modules/
-.env
-.venv/
+# Python
 __pycache__/
-.DS_Store
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+ENV/
+*.egg-info/
+dist/
+build/
 
+# Conda
+.conda/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Environment
+.env
+.env.local
+
+# Test
+.pytest_cache/
+.coverage
+htmlcov/
+*.cover
+
+# Uploads
+server/uploads/
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
