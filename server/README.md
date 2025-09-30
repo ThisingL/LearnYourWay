@@ -8,8 +8,8 @@
 
 ```bash
 # 1. 创建 Conda 环境
-conda create -n learn_your_way python=3.11
-conda activate learn_your_way
+conda create -n project_learn_your_way python=3.11
+conda activate project_learn_your_way
 
 # 2. 安装依赖
 pip install -r requirements.txt
@@ -25,7 +25,7 @@ docker-compose -f docker-compose.deps.yml up -d
 uvicorn app.main:app --reload
 
 # 6. 启动 Celery Worker（新终端）
-conda activate learn_your_way
+conda activate project_learn_your_way
 celery -A app.tasks.worker worker -l info --pool=solo  # Windows
 # celery -A app.tasks.worker worker -l info  # Linux/Mac
 ```
