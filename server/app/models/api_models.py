@@ -121,6 +121,41 @@ class MaterialRequest(BaseModel):
 
     chunk_id: str = Field(..., description="文本块ID")
     profile_id: str = Field(..., description="用户画像ID")
+    content: str = Field(..., description="学习内容")
+    
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "chunk_id": "chunk_001",
+                    "profile_id": "demo_user",
+                    "content": "光合作用是植物利用光能将二氧化碳和水转化为葡萄糖和氧气的过程...",
+                }
+            ]
+        }
+    }
+
+
+class QuizRequest(BaseModel):
+    """测验题生成请求"""
+
+    chunk_id: str = Field(..., description="文本块ID")
+    profile_id: str = Field(..., description="用户画像ID")
+    content: str = Field(..., description="学习内容")
+    count: int = Field(10, ge=1, le=50, description="题目数量")
+    
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "chunk_id": "chunk_001",
+                    "profile_id": "demo_user",
+                    "content": "光合作用是植物利用光能将二氧化碳和水转化为葡萄糖和氧气的过程...",
+                    "count": 10,
+                }
+            ]
+        }
+    }
 
 
 class QuizQuestion(BaseModel):
