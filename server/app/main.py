@@ -6,7 +6,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import ORJSONResponse
 
-from app.api import health, ingest, materials, personalize, profiles
+from app.api import health, ingest, materials, personalize, personalize_sync, profiles
 from app.config import get_settings
 
 settings = get_settings()
@@ -50,7 +50,8 @@ app.add_middleware(
 app.include_router(health.router, tags=["健康检查"])
 app.include_router(profiles.router, prefix="/profiles", tags=["用户画像"])
 app.include_router(ingest.router, prefix="/ingest", tags=["PDF摄取"])
-app.include_router(personalize.router, prefix="/personalize", tags=["个性化"])
+app.include_router(personalize.router, prefix="/personalize", tags=["个性化-异步"])
+app.include_router(personalize_sync.router, prefix="/personalize", tags=["个性化-同步（无需Redis）"])
 app.include_router(materials.router, prefix="/materials", tags=["学习素材"])
 
 

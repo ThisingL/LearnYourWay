@@ -89,6 +89,21 @@ class PersonalizeRequest(BaseModel):
 
     chunk_id: str = Field(..., description="文本块ID")
     profile_id: str = Field(..., description="用户画像ID")
+    original_text: str = Field(..., description="原始文本内容")
+    must_keep_terms: list[str] | None = Field(None, description="必须保留的术语列表")
+    
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "chunk_id": "chunk_001",
+                    "profile_id": "demo_user",
+                    "original_text": "光合作用是植物利用光能将二氧化碳和水转化为葡萄糖的过程...",
+                    "must_keep_terms": ["光合作用", "二氧化碳", "葡萄糖"],
+                }
+            ]
+        }
+    }
 
 
 class PersonalizeResponse(BaseModel):
