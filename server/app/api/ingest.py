@@ -78,23 +78,28 @@ async def upload_pdf(file: UploadFile = File(...)):
         else:
             # Redis 不可用，同步处理（演示模式）
             print("⚠️  Redis 不可用，使用同步模式处理（演示）")
-            from app.services.pdf_parser import PDFParser
+            from app.services.pdf_parser import PDFParser, clean_and_chunk
             
+            # 解析 PDF
             parser = PDFParser()
-            result = parser.parse_pdf(file_path)
+            parse_result = parser.parse_pdf(file_path)
+            
+            # 清洗和分块（直接 await，因为已经在 async 函数中）
+            chunks = await clean_and_chunk(parse_result["pages"])
             
             # 生成演示用的任务 ID
             task_id = f"sync_{file_id}"
             message = f"文件上传成功，同步处理完成（演示模式，任务ID: {task_id}）"
             
             # 将结果临时存储（用于后续查询）
-            # TODO: 使用更持久的存储
             if not hasattr(upload_pdf, '_sync_results'):
                 upload_pdf._sync_results = {}
             upload_pdf._sync_results[task_id] = {
                 "status": "success",
-                "filename": result["filename"],
-                "total_pages": result["total_pages"],
+                "filename": parse_result["filename"],
+                "total_pages": parse_result["total_pages"],
+                "chunks_count": len(chunks),
+                "chunks": chunks,  # 包含完整的分块数据
                 "message": "同步处理完成（演示模式）"
             }
         

@@ -160,14 +160,46 @@ class QuizGenerator(MaterialGenerator):
         # 构建提示词
         messages = self.build_quiz_prompt(content, grade, interests, count)
         
-        # 调用 LLM
-        response = await self.llm_provider.chat(messages, temperature=0.8)
-        
-        # TODO: 解析 JSON 响应
-        # 目前返回模拟数据
-        questions = self._generate_mock_questions(count, grade, interests)
-        
-        return {"questions": questions}
+        try:
+            # 调用 LLM
+            response = await self.llm_provider.chat(messages, temperature=0.8)
+            
+            # 解析 JSON 响应
+            import json
+            import re
+            
+            # 提取 JSON（去除可能的 markdown 代码块标记）
+            json_match = re.search(r'```json\s*(.*?)\s*```', response, re.DOTALL)
+            if json_match:
+                json_str = json_match.group(1)
+            else:
+                # 如果没有代码块，直接尝试解析
+                json_str = response
+            
+            # 解析 JSON
+            result = json.loads(json_str)
+            
+            # 标准化数据格式
+            if "questions" in result:
+                questions = result["questions"]
+                # 确保每道题都有必需的字段
+                for i, q in enumerate(questions):
+                    if "id" not in q:
+                        q["id"] = f"q{i+1}"
+                    if "difficulty" not in q:
+                        q["difficulty"] = 3
+                return {"questions": questions}
+            else:
+                raise ValueError("响应中没有 questions 字段")
+                
+        except Exception as e:
+            print(f"⚠️ LLM 响应解析失败: {str(e)}")
+            print(f"原始响应: {response[:200] if 'response' in locals() else 'N/A'}...")
+            
+            # 降级为模拟数据
+            print("⚠️ 使用模拟数据作为降级方案")
+            questions = self._generate_mock_questions(count, grade, interests)
+            return {"questions": questions}
     
     def _generate_mock_questions(
         self, count: int, grade: int, interests: List[str]
@@ -344,14 +376,38 @@ class MindMapGenerator(MaterialGenerator):
         # 构建提示词
         messages = self.build_mindmap_prompt(content, grade, interests)
         
-        # 调用 LLM
-        response = await self.llm_provider.chat(messages, temperature=0.7)
-        
-        # TODO: 解析 JSON 响应
-        # 目前返回模拟数据
-        mindmap_data = self._generate_mock_mindmap(interests)
-        
-        return mindmap_data
+        try:
+            # 调用 LLM
+            response = await self.llm_provider.chat(messages, temperature=0.7)
+            
+            # 解析 JSON 响应
+            import json
+            import re
+            
+            # 提取 JSON
+            json_match = re.search(r'```json\s*(.*?)\s*```', response, re.DOTALL)
+            if json_match:
+                json_str = json_match.group(1)
+            else:
+                json_str = response
+            
+            # 解析
+            result = json.loads(json_str)
+            
+            # 验证必需字段
+            if "nodes" in result and "edges" in result:
+                return result
+            else:
+                raise ValueError("响应中缺少 nodes 或 edges 字段")
+                
+        except Exception as e:
+            print(f"⚠️ LLM 响应解析失败: {str(e)}")
+            print(f"原始响应: {response[:200] if 'response' in locals() else 'N/A'}...")
+            
+            # 降级为模拟数据
+            print("⚠️ 使用模拟数据作为降级方案")
+            mindmap_data = self._generate_mock_mindmap(interests)
+            return mindmap_data
     
     def _generate_mock_mindmap(self, interests: List[str]) -> Dict:
         """生成模拟思维导图（用于测试）"""
@@ -505,14 +561,38 @@ class ImmersiveTextGenerator(MaterialGenerator):
         # 构建提示词
         messages = self.build_immersive_prompt(content, grade, interests)
         
-        # 调用 LLM
-        response = await self.llm_provider.chat(messages, temperature=0.9)
-        
-        # TODO: 解析 JSON 响应
-        # 目前返回模拟数据
-        immersive_data = self._generate_mock_immersive(interests)
-        
-        return immersive_data
+        try:
+            # 调用 LLM（使用配置的 max_tokens）
+            response = await self.llm_provider.chat(messages, temperature=0.9)
+            
+            # 解析 JSON 响应
+            import json
+            import re
+            
+            # 提取 JSON
+            json_match = re.search(r'```json\s*(.*?)\s*```', response, re.DOTALL)
+            if json_match:
+                json_str = json_match.group(1)
+            else:
+                json_str = response
+            
+            # 解析
+            result = json.loads(json_str)
+            
+            # 验证必需字段
+            if "sections" in result:
+                return result
+            else:
+                raise ValueError("响应中缺少 sections 字段")
+                
+        except Exception as e:
+            print(f"⚠️ LLM 响应解析失败: {str(e)}")
+            print(f"原始响应: {response[:200] if 'response' in locals() else 'N/A'}...")
+            
+            # 降级为模拟数据
+            print("⚠️ 使用模拟数据作为降级方案")
+            immersive_data = self._generate_mock_immersive(interests)
+            return immersive_data
     
     def _generate_mock_immersive(self, interests: List[str]) -> Dict:
         """生成模拟沉浸式文本（用于测试）"""

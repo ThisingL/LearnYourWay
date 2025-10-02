@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>调试工具</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body style="padding: 20px; font-family: monospace;">
+    <h1>LearnYourWay 调试工具</h1>
+    
+    <h2>测试 1: 直接调用 API</h2>
+    <button onclick="testAPI()" style="padding: 10px 20px; font-size: 16px;">点击测试</button>
+    
+    <h2>结果：</h2>
+    <pre id="result" style="background: #f5f5f5; padding: 15px; border-radius: 5px; overflow: auto;"></pre>
+    
+    <script>
+        async function testAPI() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.textContent = '测试中...';
+            
+            try {
+                // 测试数据
+                const testData = {
+                    user_id: 'thisingl',
+                    grade: 5,
+                    interests: ['星空']
+                };
+                
+                resultDiv.textContent += '\n发送的数据:\n' + JSON.stringify(testData, null, 2);
+                
+                const response = await axios.post('http://localhost:8000/profiles', testData);
+                
+                resultDiv.textContent += '\n\n✅ 成功！\n响应:\n' + JSON.stringify(response.data, null, 2);
+                
+            } catch (error) {
+                resultDiv.textContent += '\n\n❌ 失败！\n';
+                
+                if (error.response) {
+                    resultDiv.textContent += '\nHTTP 状态码: ' + error.response.status;
+                    resultDiv.textContent += '\n错误详情:\n' + JSON.stringify(error.response.data, null, 2);
+                } else if (error.request) {
+                    resultDiv.textContent += '\n无法连接到服务器';
+                    resultDiv.textContent += '\n检查后端是否启动: http://localhost:8000';
+                } else {
+                    resultDiv.textContent += '\n错误: ' + error.message;
+                }
+            }
+        }
+    </script>
+</body>
+</html>
