@@ -25,6 +25,7 @@ build/
 # Environment
 .env
 .env.local
+server/.env
 
 # Test
 .pytest_cache/
